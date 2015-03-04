@@ -24,11 +24,13 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
 
         String token = (String) authentication.getPrincipal();
 
+        // FIXME: user retrieval and validation should be a single step/transaction to avoid race condition
+
         if (!tokenService.validate(token)) {
             throw new BadCredentialsException("Invalid token");
         }
 
-        User user = tokenService.user(token);
+        User user = tokenService.user(token); // FIXME: maybe token became invalid
         Authentication at = new PreAuthenticatedAuthenticationToken(user, token);
         at.setAuthenticated(true);
         return at;

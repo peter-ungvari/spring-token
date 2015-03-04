@@ -31,7 +31,6 @@ public class TokenController {
 
     @RequestMapping(SecurityConfig.ACCESS_DENIED_URL)
     public String enterTokenGet(Model model) {
-        model.addAttribute("user", new User("Moriczka", 25));
         return SecurityConfig.ACCESS_DENIED_URL;
     }
 

@@ -6,9 +6,10 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-public class TokenAuthenticationProvider implements AuthenticationProvider {
+public class TokenAuthenticationProvider extends PreAuthenticatedAuthenticationProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TokenAuthenticationProvider.class);
 
@@ -24,8 +25,6 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
 
         String token = (String) authentication.getPrincipal();
 
-        // FIXME: user retrieval and validation should be a single step/transaction to avoid race condition
-
         if (!tokenService.validate(token)) {
             throw new BadCredentialsException("Invalid token");
         }
@@ -36,8 +35,6 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         return at;
     }
 
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return authentication.equals(PreAuthenticatedAuthenticationToken.class);
-    }
+
+
 }

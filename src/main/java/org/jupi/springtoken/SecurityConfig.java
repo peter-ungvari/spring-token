@@ -7,12 +7,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
 @Configuration
 @EnableWebMvcSecurity
@@ -20,6 +17,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public static final String ACCESS_DENIED_URL = "/enter-token";
     public static final String CREATE_TOKEN_URL = "/create-token";
+    public static final String LOGOUT_URL = "/logout";
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -32,16 +30,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers(ACCESS_DENIED_URL, CREATE_TOKEN_URL).permitAll()
                 .anyRequest().authenticated();
-        http.logout().addLogoutHandler(logoutHandler(tokenService()));
+        http.logout().addLogoutHandler(logoutHandler(tokenUserDetailsService()))
+                .logoutUrl(LOGOUT_URL).logoutSuccessUrl(ACCESS_DENIED_URL);
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint());
     }
 
     @Bean
-    public LogoutHandler logoutHandler(TokenService tokenService) {
+    public LogoutHandler logoutHandler(TokenUserDetailsService tokenUserDetailsService) {
         return (request, response, at) -> {
-            User user = (User) at.getPrincipal();
-            String token = user.getToken();
-            tokenService.invalidate(token);
+            UserDetailsWrapper userDetails = (UserDetailsWrapper) at.getPrincipal();
+            User user = userDetails.getUser();
+            tokenUserDetailsService.invalidate(user.getToken());
         };
     }
 
@@ -52,11 +51,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public AuthenticationProvider tokenAuthenticationProvider() {
-        return new TokenAuthenticationProvider(tokenService());
+        PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
+        provider.setPreAuthenticatedUserDetailsService(tokenUserDetailsService());
+        provider.setThrowExceptionWhenTokenRejected(true);
+        return provider;
     }
 
     @Bean
-    public TokenService tokenService() {
-        return new TokenServiceImpl();
+    public TokenUserDetailsServiceImpl tokenUserDetailsService() {
+        return new TokenUserDetailsServiceImpl();
     }
 }

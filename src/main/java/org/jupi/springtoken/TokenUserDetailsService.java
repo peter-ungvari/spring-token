@@ -1,8 +1,6 @@
 package org.jupi.springtoken;
 
-public interface TokenService {
-
-    boolean validate(String token);
+public interface TokenUserDetailsService {
 
     User user(String token);
 

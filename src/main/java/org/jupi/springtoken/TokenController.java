@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class TokenController {
 
     @Autowired
-    private TokenService tokenService;
+    private TokenUserDetailsService tokenUserDetailsService;
 
     @RequestMapping(SecurityConfig.CREATE_TOKEN_URL)
     public String createTokenGet(Model model) {
@@ -25,7 +25,7 @@ public class TokenController {
 
     @RequestMapping(value = SecurityConfig.CREATE_TOKEN_URL, method = RequestMethod.POST)
     public String createTokenPost(@ModelAttribute User user, Model model) {
-        model.addAttribute("token", tokenService.createToken(user));
+        model.addAttribute("token", tokenUserDetailsService.createToken(user));
         return SecurityConfig.CREATE_TOKEN_URL;
     }
 
@@ -41,8 +41,8 @@ public class TokenController {
     }
 
     @RequestMapping
-    public String user(@AuthenticationPrincipal User user, Model model) {
-        model.addAttribute("user", user);
+    public String user(@AuthenticationPrincipal UserDetailsWrapper userDetails, Model model) {
+        model.addAttribute("user", userDetails.getUser());
         return "user";
     }
 }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Enter Token</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css"/>
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1 class="page-header">You are unauthorized</h1>
+
+    <h2 class="page-header">Emulate a server-side create token request (Server-2-Server)</h2>
+
+    <form id="create-token" class="form-horizontal" th:object="${user}" th:action="@{/create-token}" method="post">
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="name">Name</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="name" th:value="*{name}" name="name"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="age">Age</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="age" th:value="*{age}" name="age"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-primary">Create Token</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="create-token-request">Request sent</label>
+
+            <div class="col-sm-9">
+                <textarea class="form-control" id="create-token-request"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="create-token-response">Response received</label>
+
+            <div class="col-sm-9">
+                <textarea class="form-control" id="create-token-response"></textarea>
+            </div>
+        </div>
+    </form>
+
+    <hr/>
+
+    <h2>Authorize with token (Client-to-Server)</h2>
+
+    <form id="authorize" class="form-horizontal" th:action="@{authorize}" method="post">
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="token">Token</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="token" name="token" th:value="${token}"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-primary">Enter Token</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    jQuery(function ($) {
+        $('form#create-token').submit(function(event) {
+            event.preventDefault();
+
+            var request = JSON.stringify({ name: $(this).find('#name').val(), age: $(this).find('#age').val() });
+
+            $('textarea#create-token-request').text(request);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'post',
+                data: request,
+                processData: false,
+                contentType: 'application/json',
+                success: function (response) {
+                    $('textarea#create-token-response').text(JSON.stringify(response));
+                    $('form#authorize').find('#token').val(response.token);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

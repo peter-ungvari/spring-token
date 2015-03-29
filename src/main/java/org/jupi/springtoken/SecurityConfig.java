@@ -15,7 +15,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 @EnableWebMvcSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public static final String ACCESS_DENIED_URL = "/enter-token";
+    public static final String ACCESS_DENIED_URL = "/unauthorized";
+    public static final String AUTHORIZE_URL = "/authorize";
     public static final String CREATE_TOKEN_URL = "/create-token";
     public static final String LOGOUT_URL = "/logout";
 
@@ -28,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers(ACCESS_DENIED_URL, CREATE_TOKEN_URL).permitAll()
+                .antMatchers(ACCESS_DENIED_URL, CREATE_TOKEN_URL, AUTHORIZE_URL).permitAll()
                 .anyRequest().authenticated();
         http.logout().addLogoutHandler(logoutHandler(tokenUserDetailsService()))
                 .logoutUrl(LOGOUT_URL).logoutSuccessUrl(ACCESS_DENIED_URL);

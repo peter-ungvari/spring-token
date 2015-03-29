@@ -34,7 +34,11 @@ public class TokenUserDetailsServiceImpl
 
     @Override
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken auth) throws UsernameNotFoundException {
-        User user = user((String) auth.getPrincipal());
+        String token = (String) auth.getPrincipal();
+        User user = user(token);
+        if (user == null) {
+            throw new UsernameNotFoundException(token);
+        }
         return new UserDetailsWrapper(user);
     }
 }
